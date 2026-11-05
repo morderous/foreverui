@@ -1,0 +1,5 @@
+*.exe
+manager/tests/out/
+dist/
+__pycache__/
+Thumbs.db

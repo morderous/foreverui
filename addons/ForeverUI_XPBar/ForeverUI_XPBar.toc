@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: ForeverUI XPbar
+## Notes: An XP bar that also shows the XP of completed quests, rested XP, XP per hour and time played.
+## Author: morderous
+## Version: 0.2.0
+## OptionalDeps: EllesmereUI
+## SavedVariables: ForeverUIXPBarDB
+## SavedVariablesPerCharacter: ForeverUIXPBarCharDB
+
+ForeverUI_XPBar.lua

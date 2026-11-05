@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: ForeverUI
+## Notes: Installs the ForeverUI look: the EllesmereUI profile, the Edit Mode layout, interface settings, OpenMap, Polestar and ForeverUI XPbar settings.
+## Author: morderous
+## Version: 0.1.0
+## OptionalDeps: EllesmereUI, OpenMap, Polestar, ForeverUI_XPBar
+## SavedVariables: ForeverUIDB, ForeverUICapture
+
+Profile.lua
+ForeverUI.lua
