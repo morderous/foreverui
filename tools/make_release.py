@@ -1,10 +1,14 @@
 """Builds a ForeverUI release into dist/v<version>/, ready to upload; sends nothing.
 
-    python -I tools/make_release.py [<version>] [--empty-profile]
+    python -I tools/make_release.py [<version>] [--no-look | --empty-profile]
 
 The version defaults to the one in addons/ForeverUI/ForeverUI.toc. A release
 needs the captured look in addons/ForeverUI/Profile.lua (tools/make_profile.py);
---empty-profile builds one without it, for a test only. It makes:
+--no-look makes a real release of the addons alone, before the look is
+captured (the look comes with a later version; ForeverUI then shows no install
+window), and leaves the mark ADDONS-ONLY in dist/v<version>/ for
+foreverui_publish.py. --empty-profile builds one without it, for a test only.
+It makes:
   ForeverUI-<version>.zip   the ForeverUI, ForeverUI_XPBar, ForeverUI_QuestLog and ForeverUI_Trainer folders
   release.json              which zip is for WoW Forever (flavor "forever", Interface 16001),
                             as addon packagers write it, so ForeverUI Manager and other
@@ -72,13 +76,14 @@ def file_version(exe):
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    empty_ok = "--empty-profile" in sys.argv[1:]
+    no_look = "--no-look" in sys.argv[1:]
+    empty_ok = no_look or "--empty-profile" in sys.argv[1:]
     tocs = dict((folder, toc(folder)) for folder in FOLDERS)
     version = args[0] if args else tocs["ForeverUI"]["Version"]
     with open(os.path.join(ADDONS, "ForeverUI", "Profile.lua"), encoding="utf-8") as f:
         empty = re.search(r"^ForeverUI_Profile\s*=\s*nil\s*$", f.read(), re.M) is not None
     if empty and not empty_ok:
-        sys.exit("Profile.lua has no profile yet: /fui capture in the game, then tools/make_profile.py (or --empty-profile for a test)")
+        sys.exit("Profile.lua has no profile yet: /fui capture in the game, then tools/make_profile.py (or --no-look for the addons alone, --empty-profile for a test)")
     if not re.match(r"^\d+\.\d+\.\d+$", version):
         sys.exit("a version is three numbers: %s" % version)
     if tocs["ForeverUI"]["Version"] != version:
@@ -89,6 +94,12 @@ def main():
 
     out = os.path.join(ROOT, "dist", "v" + version)
     os.makedirs(out, exist_ok=True)
+    mark = os.path.join(out, "ADDONS-ONLY")
+    if no_look and empty:
+        with open(mark, "w") as f:
+            f.write("a release of the addons alone, without the look\n")
+    elif os.path.exists(mark):
+        os.remove(mark)
     zip_name = "ForeverUI-%s.zip" % version
     zip_path = os.path.join(out, zip_name)
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
@@ -128,7 +139,7 @@ def main():
     print("  %s: %d files, %d bytes (%s)" % (zip_name, len(names), os.path.getsize(zip_path),
                                             ", ".join("%s %s" % (f, tocs[f]["Version"]) for f in FOLDERS)))
     print("  ForeverUIManager.exe: %s, %d bytes" % (wanted, os.path.getsize(exe)))
-    print("  release.json, SHA256SUMS")
+    print("  release.json, SHA256SUMS" + (", ADDONS-ONLY (no look: not uploaded)" if no_look and empty else (" (a test: no look)" if empty else "")))
 
 
 if __name__ == "__main__":

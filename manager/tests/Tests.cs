@@ -434,7 +434,7 @@ namespace ForeverUIManager
             string text = PackText();
             KnownRepo[][] read = Pack.Parse(text);
             KnownRepo[] items = read[0];
-            Is(items.Length == 12 && read[1].Length == 4, "pack.json: 12 addons and 4 guides (" + items.Length + ", " + read[1].Length + ")");
+            Is(items.Length == 11 && read[1].Length == 4, "pack.json: 11 addons and 4 guides (" + items.Length + ", " + read[1].Length + ")");
             Is(items.Count(k => k.Required) == 4 && items.Where(k => k.Required).All(k => k.Ticked), "4 required, all ticked");
             KnownRepo[] voices = items.Where(k => !k.Ticked).ToArray();
             Is(voices.Length == 4 && voices.All(k => k.Repo == "rusty-key/spoken-wow" && k.Series != null && k.Zip != null), "the 4 voice packs come unticked, each with its series and zip");
@@ -454,7 +454,7 @@ namespace ForeverUIManager
             Pack.Use(text, true);
             Is(File.Exists(Path.Combine(Core.Home(), "pack.json")), "the pack read is kept for offline");
             List<TrackedAddon> list = ForeverUIManager.Store.Load();
-            Is(list.Count == 12 && list.All(a => a.Source == "pack"), "a new list holds the pack's 12 addons (" + list.Count + ")");
+            Is(list.Count == 11 && list.All(a => a.Source == "pack"), "a new list holds the pack's 11 addons (" + list.Count + ")");
             Is(list.Count(a => a.Required) == 4 && list.Find(a => a.Repo == "morderous/foreverui").Required, "ForeverUI and the other three are required");
             List<TrackedAddon> unticked = list.FindAll(a => !a.Want);
             Is(unticked.Count == 4 && unticked.All(a => a.Repo == "rusty-key/spoken-wow" && !a.Auto && a.Series.Contains("audio")), "the voice packs: unticked, no update by themselves");
@@ -466,7 +466,7 @@ namespace ForeverUIManager
             list.Find(a => a.Title == "Spoken Bosses Audio").Want = true;
             ForeverUIManager.Store.Save(list);
             List<TrackedAddon> again = ForeverUIManager.Store.Load();
-            Is(again.Count == 11 && !again.Exists(a => a.Title == "Forever Quest Tint"), "an extra taken off stays off");
+            Is(again.Count == 10 && !again.Exists(a => a.Title == "Forever Quest Tint"), "an extra taken off stays off");
             Is(again.Exists(a => a.Title == "Polestar" && a.Required && a.ZipPattern == "Polestar-*.zip"), "a required one comes back");
             Is(again.Find(a => a.Title == "Spoken Bosses Audio").Want && !again.Find(a => a.Title == "Spoken Places Audio").Want, "ticks kept");
 
@@ -491,7 +491,7 @@ namespace ForeverUIManager
             List<TrackedAddon> old = ForeverUIManager.Store.Load();
             List<TrackedAddon> spoken = old.FindAll(a => a.Repo == "rusty-key/spoken-wow");
             TrackedAddon main = spoken.Find(a => a.Tag == "spoken/v3.8.3");
-            Is(old.Count == 12 && spoken.Count == 5, "the old list joins the pack without twins (" + old.Count + ", " + spoken.Count + " Spoken)");
+            Is(old.Count == 11 && spoken.Count == 5, "the old list joins the pack without twins (" + old.Count + ", " + spoken.Count + " Spoken)");
             Is(main != null && main.Series == @"^spoken/v\d" && main.ZipPattern == "Spoken-*.zip" && main.Want && main.Trusted, "Spoken added by hand takes the pack's series, kept installed");
             Is(old.Count(a => a.Repo == "fitzforge/polestar") == 1 && old.Find(a => a.Repo == "fitzforge/polestar").Tag == "v0.3.2", "Polestar once, as it was");
             Is(spoken.Count(a => a.Tag == null && !a.Want) == 4, "the voice packs join unticked");
@@ -791,7 +791,7 @@ namespace ForeverUIManager
         }
 
         // A ForeverUI release made by tools/make_release.py, as the app reads
-        // one: release.json names the zip, SHA256SUMS agrees, two folders go in.
+        // one: release.json names the zip, SHA256SUMS agrees, its four folders go in.
         static void OurRelease(string dir)
         {
             string chosen = GitHub.ForeverIn(File.ReadAllText(Path.Combine(dir, "release.json")));
@@ -802,7 +802,7 @@ namespace ForeverUIManager
             Is(chosen != null && sums.ContainsKey(chosen) && sums[chosen] == Core.Sha256Of(zip), "SHA256SUMS agrees with the zip");
             string exe = Path.Combine(dir, "ForeverUIManager.exe");
             Is(sums.ContainsKey("ForeverUIManager.exe") && sums["ForeverUIManager.exe"] == Core.Sha256Of(exe), "SHA256SUMS agrees with the exe");
-            if (zip != null) RealZip(zip, 2);
+            if (zip != null) RealZip(zip, 4);   // ForeverUI, XPbar, Quest Log, Trainer
         }
 
         static void RealZip(string zip, int expected)
