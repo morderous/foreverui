@@ -7,7 +7,6 @@
     { "repo": "openmap-world/openmap", "title": "OpenMap", "required": true },
     { "repo": "fitzforge/polestar", "title": "Polestar", "required": true, "series": "^v\\d", "zip": "Polestar-*.zip" },
     { "repo": "alexdia25/forever-quest-tint", "title": "Forever Quest Tint" },
-    { "repo": "fusionpit/WhatsTraining", "title": "What's Training?" },
     { "repo": "Peterodox/YUI-Dialogue", "title": "Dialogue UI" },
     { "repo": "rusty-key/spoken-wow", "title": "Spoken", "series": "^spoken/v\\d", "zip": "Spoken-*.zip" },
     { "repo": "rusty-key/spoken-wow", "title": "Spoken Quests Audio", "ticked": false, "series": "^quests-audio/v\\d", "zip": "SpokenQuestsAudioAll-*.zip" },

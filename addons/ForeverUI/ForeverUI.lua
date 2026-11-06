@@ -512,6 +512,7 @@ local function ShowWindow()
     win:SetHeight(-y + 50)
     win:Show()
 end
+ForeverUI_ShowInstaller = ShowWindow   -- (the options' General page)
 
 ---------------------------------------------------------------------------
 -- Events and /fui
@@ -540,11 +541,15 @@ SlashCmdList.FOREVERUI = function(input)
     local cmd = string.lower(string.match(input or "", "^%s*(%S*)") or "")
     if cmd == "" or cmd == "install" then
         ShowWindow()
+    elseif cmd == "options" or cmd == "o" then
+        ForeverUI_ToggleOptions()
     elseif cmd == "capture" then
         Capture()
     elseif cmd == "undo" then
         Undo()
+    elseif cmd == "move" then
+        ForeverUI_MoveUI()
     else
-        Say("/fui opens the install window. /fui undo puts your old setup back.")
+        Say("/fui opens the install window. /fui options opens the options. /fui move moves the pack's windows and bars. /fui undo puts your old setup back.")
     end
 end

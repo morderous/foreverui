@@ -12,4 +12,6 @@ ForeverUI's XP bar for WoW Forever (Interface 16001), written from scratch.
 
 Shift + drag moves it. `/fxp scale 1.2`, `/fxp width 700`, `/fxp lock`, `/fxp unlock`, `/fxp reset`, `/fxp session`, `/fxp blizzard`.
 
+With ForeverUI, `/fxp options` (or the F by the minimap) opens its page in the ForeverUI options, with every setting: show or hide it, width, bar height, scale, the two text sizes and the outline, lock, layer, top or bottom of the screen, each of its words (time played, completed quests, level, XP numbers (whole or short, as 4.1k / 10.1k), percent, time to level, rested, the tooltip), the completed quests and rested parts of the bar and the colors of XP, completed quests, rested and the background, Blizzard's bar, and a new XP per hour session.
+
 Install: copy the `ForeverUI_XPBar` folder to `_forever_\Interface\AddOns` and restart the game (a new addon is only seen at start).

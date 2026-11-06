@@ -5,7 +5,7 @@
 The version defaults to the one in addons/ForeverUI/ForeverUI.toc. A release
 needs the captured look in addons/ForeverUI/Profile.lua (tools/make_profile.py);
 --empty-profile builds one without it, for a test only. It makes:
-  ForeverUI-<version>.zip   the ForeverUI and ForeverUI_XPBar folders
+  ForeverUI-<version>.zip   the ForeverUI, ForeverUI_XPBar, ForeverUI_QuestLog and ForeverUI_Trainer folders
   release.json              which zip is for WoW Forever (flavor "forever", Interface 16001),
                             as addon packagers write it, so ForeverUI Manager and other
                             managers pick the zip
@@ -23,7 +23,7 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 ADDONS = os.path.join(ROOT, "addons")
-FOLDERS = ("ForeverUI", "ForeverUI_XPBar")
+FOLDERS = ("ForeverUI", "ForeverUI_XPBar", "ForeverUI_QuestLog", "ForeverUI_Trainer")
 INTERFACE = 16001
 # Never shipped: fonts (the profile uses EllesmereUI's), programs, and leftovers.
 REFUSED = (".ttf", ".otf", ".exe", ".dll", ".bat", ".cmd", ".ps1", ".py", ".pyc", ".zip")

@@ -1,0 +1,14 @@
+## Interface: 16001
+## Title: ForeverUI Trainer
+## Notes: What your class trainer has for you now and at the next levels, the nearest trainer, and the weapon masters of your capitals.
+## Author: morderous
+## Version: 0.1.0
+## IconTexture: Interface\Icons\INV_Misc_Book_11
+## OptionalDeps: ForeverUI, EllesmereUI, EllesmereUIMinimap, Polestar
+## SavedVariables: ForeverUITrainerDB
+## SavedVariablesPerCharacter: ForeverUITrainerCharDB
+## AddonCompartmentFunc: ForeverUITrainer_OnAddonCompartmentClick
+
+Data.lua
+ForeverUI_Trainer.lua
+Spellbook.lua

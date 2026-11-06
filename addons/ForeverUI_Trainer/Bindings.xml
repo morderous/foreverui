@@ -1,0 +1,4 @@
+<!-- A key for the trainer window (Key Bindings > AddOns); none is set at the start. -->
+<Bindings>
+	<Binding name="FOREVERUITRAINER_TOGGLE" header="FOREVERUITRAINER" category="ADDONS">ForeverUITrainer_Toggle()</Binding>
+</Bindings>

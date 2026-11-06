@@ -1,0 +1,5 @@
+<!-- A key of its own for the window (Key Bindings > AddOns), for anyone who
+     gives the quest log key back to Blizzard with /fql key. -->
+<Bindings>
+	<Binding name="FOREVERUIQUESTLOG_TOGGLE" header="FOREVERUIQUESTLOG" category="ADDONS">ForeverUIQuestLog_Toggle()</Binding>
+</Bindings>

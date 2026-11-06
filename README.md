@@ -5,10 +5,14 @@ A UI package for WoW Forever: our own addons, an EllesmereUI profile, and Foreve
 ## What is here
 
 - `manager/`: ForeverUI Manager, the Windows app (C#, built with `manager\build.bat`). It installs and updates addons from their authors' own GitHub releases and Polestar's guides.
-- `addons/ForeverUI/`: installs the ForeverUI look (the EllesmereUI profile, the Edit Mode layout, interface settings, OpenMap, Polestar and XPbar settings) from a window on first login, and captures it from the author's UI (`/fui capture`).
+- `addons/ForeverUI/`: installs the ForeverUI look (the EllesmereUI profile, the Edit Mode layout, interface settings, OpenMap, Polestar and XPbar settings) from a window on first login, and captures it from the author's UI (`/fui capture`). It also has the pack's options window (a page per addon, and Move UI for the pack's windows and bars) and its minimap button, an F in the class color that opens a menu of the pack.
 - `addons/ForeverUI_XPBar/`: ForeverUI XPbar, an XP bar that also shows the XP of completed quests, rested XP, XP per hour and time played.
+- `addons/ForeverUI_QuestLog/`: ForeverUI Quest Log, the classic two-page quest log: the quest's text on one page, the list on the other. The quest log key (L) opens it, and the map key (M) stays the map.
+- `addons/ForeverUI_Trainer/`: ForeverUI Trainer: what your class trainer has for you now and at the next levels, with prices, the nearest class trainer (from Polestar) with a map pin, the weapon masters of your capitals, a notice at each level up, a Trainer tab inside the spell book, and a spell book that moves by its top bar. Its spell list starts from What's Training?'s data (MIT).
 - `profiles/`: the captured look, to review and diff: the EllesmereUI export string, the Edit Mode layout string, the interface settings.
 - `tools/make_profile.py`: turns a `/fui capture` into `addons/ForeverUI/Profile.lua` and the files in `profiles/`.
+- `tools/make_icons.py`: draws our own addon icons (the F, the XP bar) for the game's AddOns list.
+- `tools/make_trainer_data.py`: writes `addons/ForeverUI_Trainer/Data.lua` from What's Training?'s data files.
 - `tools/make_release.py`: builds a release into `dist/` (see [RELEASING.md](RELEASING.md)).
 - `pack.json`: the pack's list, which ForeverUI Manager reads from here.
 
@@ -17,7 +21,7 @@ A UI package for WoW Forever: our own addons, an EllesmereUI profile, and Foreve
 These are not shipped here. ForeverUI Manager installs them from their authors' own GitHub releases. `pack.json` is the list it reads, from this repository's `main`: the required ones, then the extras, which can be left out or taken off. Most extras come ticked; the big ones come unticked.
 
 - Required: [EllesmereUI](https://github.com/EllesmereGaming/EllesmereUI), [OpenMap](https://github.com/openmap-world/openmap), [Polestar](https://github.com/fitzforge/polestar).
-- Extras: [Forever Quest Tint](https://github.com/alexdia25/forever-quest-tint), [What's Training?](https://github.com/fusionpit/WhatsTraining), [Dialogue UI](https://github.com/Peterodox/YUI-Dialogue), [Spoken](https://github.com/rusty-key/spoken-wow).
+- Extras: [Forever Quest Tint](https://github.com/alexdia25/forever-quest-tint), [Dialogue UI](https://github.com/Peterodox/YUI-Dialogue), [Spoken](https://github.com/rusty-key/spoken-wow).
 - Unticked extras: the English voice packs for [Spoken](https://github.com/rusty-key/spoken-wow/releases) (quests, about 1.5 GB; readables, 475 MB; places, 456 MB; bosses, 157 MB). Spoken needs them to speak, but together they are about 2.6 GB.
 - Polestar guides: [Lodestar](https://github.com/petllama/lodestar-guides), [MittenQuest](https://github.com/petllama/mittenquest-guides), [Free RestedXP](https://github.com/petllama/rxp-free-guides), [Every Quest](https://github.com/bmagic/every-quest).
 

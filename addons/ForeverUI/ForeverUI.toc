@@ -1,10 +1,18 @@
 ## Interface: 16001
 ## Title: ForeverUI
-## Notes: Installs the ForeverUI look: the EllesmereUI profile, the Edit Mode layout, interface settings, OpenMap, Polestar and ForeverUI XPbar settings.
+## Notes: Installs the ForeverUI look (the EllesmereUI profile, the Edit Mode layout, interface settings, OpenMap, Polestar and ForeverUI XPbar settings), and holds the pack's options and its minimap button.
 ## Author: morderous
 ## Version: 0.1.0
-## OptionalDeps: EllesmereUI, OpenMap, Polestar, ForeverUI_XPBar
+## IconTexture: Interface\AddOns\ForeverUI\Media\Icon
+## OptionalDeps: EllesmereUI, EllesmereUIMinimap, OpenMap, Polestar, ForeverUI_XPBar, ForeverUI_QuestLog
 ## SavedVariables: ForeverUIDB, ForeverUICapture
+## AddonCompartmentFunc: ForeverUI_OnAddonCompartmentClick
 
 Profile.lua
 ForeverUI.lua
+Options.lua
+MinimapButton.lua
+Map.lua
+MapWindow.lua
+Modules.lua
+MoveUI.lua

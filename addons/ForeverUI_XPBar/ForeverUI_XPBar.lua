@@ -1,6 +1,7 @@
 -- ForeverUI XPbar: one XP bar that also shows the XP of the quests that are
 -- complete and not yet turned in, rested XP, XP per hour and time played.
--- Shift + drag moves it. /fxp lists the commands.
+-- Shift + drag moves it. /fxp lists the commands; the ForeverUI options have
+-- a page for every setting (its "XP bar" page, at the end of this file).
 
 local ADDON = ...
 
@@ -14,10 +15,37 @@ local COLOR_BACK = { 0.10, 0.10, 0.10, 0.90 }
 local COLOR_XP = { 0.13, 0.55, 0.95, 1 }
 local COLOR_QUEST = { 1.00, 0.76, 0.03, 1 }
 local COLOR_RESTED = { 0.35, 0.45, 0.95, 0.45 }
-local TEXT_QUEST = "|cffffc21a"
-local TEXT_RESTED = "|cff4d9cff"
+
+-- Every setting and its first value. A setting left nil in the saved table
+-- has this value, so a reset is a nil.
+local DEFAULTS = {
+    hidden = false, width = DEFAULT_WIDTH, height = BAR_HEIGHT, scale = 1,
+    textSize = TEXT_SIZE, barTextSize = BAR_TEXT_SIZE, outline = "OUTLINE",
+    locked = false, strata = "LOW",
+    showTop = true, showQuestText = true, showLevel = true, showNumbers = true, showPercent = true,
+    shortNumbers = false,     -- 4.1k / 10.1k on the bar instead of 4108 / 10100
+    showRate = true, showRested = true, showQuestFill = true, showRestedFill = true, tooltip = true,
+    colorXP = COLOR_XP, colorQuest = COLOR_QUEST, colorRested = COLOR_RESTED, colorBack = COLOR_BACK,
+    keepBlizzard = false,
+}
 
 local db, charDB
+
+local function Get(key)
+    local v = db and db[key]
+    if v == nil then return DEFAULTS[key] end
+    return v
+end
+
+-- A color as a text code, for the words in the bar's colors
+local function Code(color)
+    return string.format("|cff%02x%02x%02x", math.floor(color[1] * 255 + 0.5), math.floor(color[2] * 255 + 0.5), math.floor(color[3] * 255 + 0.5))
+end
+
+-- A lighter one, for words in a color that is faint on the bar (rested)
+local function Light(color)
+    return color[1] + (1 - color[1]) * 0.3, color[2] + (1 - color[2]) * 0.3, color[3] + (1 - color[3]) * 0.3
+end
 local state = {
     played = nil, levelTime = nil, playedAt = nil, levelAt = nil,
     questXP = 0, questCount = 0,
@@ -85,6 +113,7 @@ local barCenter = Text(bar, BAR_TEXT_SIZE)
 barCenter:SetPoint("CENTER", bar, "CENTER", 0, 0)
 local barRight = Text(bar, BAR_TEXT_SIZE)
 barRight:SetPoint("RIGHT", bar, "RIGHT", -6, 0)
+barLeft.onBar, barCenter.onBar, barRight.onBar = true, true, true
 
 local bottomLeft = Text(root, TEXT_SIZE)
 bottomLeft:SetPoint("TOPLEFT", bar, "BOTTOMLEFT", 2, -LINE_GAP)
@@ -101,23 +130,31 @@ local function FontPath()
     return STANDARD_TEXT_FONT
 end
 
+-- The outline chosen (none, OUTLINE or THICKOUTLINE), in EllesmereUI's way
+-- when it is there.
 local function FontFlags()
+    local outline = Get("outline")
+    if outline ~= "OUTLINE" and outline ~= "THICKOUTLINE" then return "" end
     local E = _G.EllesmereUI
     if E and E.SlugFlag then
-        local ok, flags = pcall(E.SlugFlag, "OUTLINE, SLUG")
+        local ok, flags = pcall(E.SlugFlag, outline .. ", SLUG")
         if ok and type(flags) == "string" then return flags end
     end
-    return "OUTLINE"
+    return outline
 end
 
 local function ApplyFonts()
     local path, flags = FontPath(), FontFlags()
     for i = 1, #texts do
         local fs = texts[i]
-        local ok = pcall(fs.SetFont, fs, path, fs.size, flags)
+        local size = fs.onBar and Get("barTextSize") or Get("textSize")
+        local ok = pcall(fs.SetFont, fs, path, size, flags)
         if not ok or not fs:GetFont() then
-            fs:SetFont(STANDARD_TEXT_FONT, fs.size, "OUTLINE")
+            fs:SetFont(STANDARD_TEXT_FONT, size, flags)
         end
+        -- Without an outline, a shadow keeps the words readable
+        if flags == "" then fs:SetShadowOffset(1, -1) else fs:SetShadowOffset(0, 0) end
+        fs:SetShadowColor(0, 0, 0, 1)
     end
 end
 
@@ -173,7 +210,8 @@ local function SetFill(tex, from, width)
 end
 
 local function Refresh()
-    if AtMax() then root:Hide() return end
+    if not db then return end
+    if AtMax() or Get("hidden") then root:Hide() return end
     root:Show()
     local cur, max = UnitXP("player"), UnitXPMax("player")
     if not max or max <= 0 then return end
@@ -181,8 +219,8 @@ local function Refresh()
     local w = bar:GetWidth()
 
     local xpW = math.min(w, w * cur / max)
-    local questW = math.min(w - xpW, w * state.questXP / max)
-    local restedW = math.min(w - xpW - questW, w * rested / max)
+    local questW = Get("showQuestFill") and math.min(w - xpW, w * state.questXP / max) or 0
+    local restedW = Get("showRestedFill") and math.min(w - xpW - questW, w * rested / max) or 0
     SetFill(xpFill, 0, xpW)
     SetFill(questFill, xpW, questW)
     SetFill(restedFill, xpW + questW, restedW)
@@ -192,10 +230,14 @@ local function Refresh()
     if state.played then played = Clock(state.played + now - state.playedAt) end
     if state.levelTime then levelTime = Clock(state.levelTime + now - state.levelAt) end
     topLeft:SetText(string.format("Played: %s  This Level: %s", played, levelTime))
-    topRight:SetText(string.format("Completed Quests: %s%.1f%%|r", TEXT_QUEST, state.questXP / max * 100))
+    topRight:SetText(string.format("Completed Quests: %s%.1f%%|r", Code(Get("colorQuest")), state.questXP / max * 100))
 
     barLeft:SetText(string.format("Level %d", UnitLevel("player")))
-    barCenter:SetText(string.format("%d / %d", cur, max))
+    if Get("shortNumbers") then
+        barCenter:SetText(string.format("%s / %s", Short(cur), Short(max)))
+    else
+        barCenter:SetText(string.format("%d / %d", cur, max))
+    end
     barRight:SetText(string.format("%.1f%%", cur / max * 100))
 
     local rate = Rate()
@@ -204,7 +246,8 @@ local function Refresh()
     else
         bottomLeft:SetText("No XP yet this session")
     end
-    bottomRight:SetText(string.format("Rested: %s%.1f%%|r", TEXT_RESTED, rested / max * 100))
+    local restedColor = Get("colorRested")
+    bottomRight:SetText(string.format("Rested: %s%.1f%%|r", Code({ Light(restedColor) }), rested / max * 100))
 end
 
 -- XP of the quests in the log that are done and only wait to be turned in.
@@ -296,14 +339,40 @@ local function Place()
     else
         root:SetPoint("TOP", UIParent, "TOP", 0, -40)
     end
-    root:SetScale(db.scale or 1)
-    root:SetWidth(db.width or DEFAULT_WIDTH)
-    root:EnableMouse(not db.locked)
+    root:SetScale(Get("scale"))
+    root:SetWidth(Get("width"))
+    root:EnableMouse(not Get("locked"))
 end
 
 local function SavePlace()
     local point, _, relPoint, x, y = root:GetPoint(1)
     db.point = { point, relPoint, x, y }
+end
+
+-- Everything the options set, at once
+local function Apply()
+    if not db then return end
+    root:SetFrameStrata(Get("strata"))
+    bar:SetHeight(Get("height"))
+    root:SetHeight(Get("height") + 2 * (Get("textSize") + LINE_GAP + 2))
+    local function Paint(tex, key)
+        local c = Get(key)
+        tex:SetColorTexture(c[1], c[2], c[3], c[4] or 1)
+    end
+    Paint(xpFill, "colorXP")
+    Paint(questFill, "colorQuest")
+    Paint(restedFill, "colorRested")
+    Paint(back, "colorBack")
+    topLeft:SetShown(Get("showTop"))
+    topRight:SetShown(Get("showQuestText"))
+    barLeft:SetShown(Get("showLevel"))
+    barCenter:SetShown(Get("showNumbers"))
+    barRight:SetShown(Get("showPercent"))
+    bottomLeft:SetShown(Get("showRate"))
+    bottomRight:SetShown(Get("showRested"))
+    ApplyFonts()
+    Place()
+    Refresh()
 end
 
 -- Blizzard's XP and reputation bars. EllesmereUI Action Bars hides them
@@ -313,7 +382,7 @@ end
 -- is hidden and Blizzard's reputation bar may be wanted.
 local function HideBlizzardBar()
     local manager = _G.StatusTrackingBarManager
-    if not manager or db.keepBlizzard or AtMax() then return end
+    if not manager or Get("keepBlizzard") or AtMax() then return end
     if InCombatLockdown() then
         state.blizzardPending = true
         return
@@ -326,7 +395,7 @@ local function HideBlizzardBar()
 end
 
 root:SetScript("OnDragStart", function(self)
-    if IsShiftKeyDown() then self:StartMoving() end
+    if IsShiftKeyDown() and not Get("locked") then self:StartMoving() end
 end)
 
 root:SetScript("OnDragStop", function(self)
@@ -337,6 +406,7 @@ end)
 root:SetScript("OnSizeChanged", function() Refresh() end)
 
 root:SetScript("OnEnter", function(self)
+    if not Get("tooltip") then return end
     local cur, max = UnitXP("player"), UnitXPMax("player")
     if not max or max <= 0 then return end
     local rested = GetXPExhaustion() or 0
@@ -384,7 +454,7 @@ root:SetScript("OnEvent", function(self, event, ...)
         if not s or not s.seen or time() - s.seen > 600 then
             charDB.session = { start = time(), gained = 0, seen = time() }
         end
-        Place()
+        Apply()
     elseif event == "PLAYER_LOGIN" then
         ApplyFonts()
     elseif event == "PLAYER_ENTERING_WORLD" then
@@ -464,7 +534,130 @@ SlashCmdList.FOREVERUIXPBAR = function(input)
             HideBlizzardBar()
             Say("Blizzard's XP bar is hidden.")
         end
+    elseif cmd == "options" and ForeverUI_OpenOptions then
+        ForeverUI_OpenOptions("xpbar")
     else
-        Say("/fxp scale 1.2 | width 700 | lock | unlock | reset | session | blizzard")
+        Say("/fxp scale 1.2 | width 700 | lock | unlock | reset | session | blizzard" .. (ForeverUI_OpenOptions and " | options" or ""))
     end
 end
+
+---------------------------------------------------------------------------
+-- The ForeverUI options' "XP bar" page (ForeverUI's Options.lua draws it)
+---------------------------------------------------------------------------
+local function Set(key)
+    return function(v)
+        db[key] = v
+        Apply()
+    end
+end
+
+local function Is(key)
+    return function() return Get(key) and true or false end
+end
+
+local function Value(key)
+    return function() return Get(key) end
+end
+
+ForeverUI_Pages = ForeverUI_Pages or {}
+ForeverUI_Pages[#ForeverUI_Pages + 1] = {
+    key = "xpbar",
+    title = "XP bar",
+    order = 20,
+    build = function(K)
+        K:Head("XP bar", "One bar for your XP, the XP of the quests that only wait to be turned in, rested XP, XP per hour and time played.")
+        K:Switch("Show the bar", function() return not Get("hidden") end, function(v)
+            db.hidden = not v
+            Apply()
+        end)
+        local function Shown() return not Get("hidden") end
+        local function Unlocked() return Shown() and not Get("locked") end
+
+        K:Section("Size")
+        K:Slider("Width", 300, 1600, 10, Value("width"), Set("width"), "%d", Shown)
+        K:Slider("Bar height", 6, 40, 1, Value("height"), Set("height"), "%d", Shown)
+        K:Slider("Scale", 0.5, 2, 0.05, Value("scale"), Set("scale"), "%.2f", Shown)
+        K:Slider("Text size", 8, 20, 1, Value("textSize"), Set("textSize"), "%d", Shown)
+        K:Slider("Text size on the bar", 8, 20, 1, Value("barTextSize"), Set("barTextSize"), "%d", Shown)
+        K:Choice("Text outline", { { "NONE", "None" }, { "OUTLINE", "Outline" }, { "THICKOUTLINE", "Thick" } },
+            Value("outline"), Set("outline"), Shown)
+
+        K:Section("Place")
+        K:Switch("Locked", Is("locked"), Set("locked"), Shown)
+        K:Choice("Layer", { { "BACKGROUND", "Background" }, { "LOW", "Low" }, { "MEDIUM", "Medium" }, { "HIGH", "High" } },
+            Value("strata"), Set("strata"), Shown)
+        K:Buttons({
+            { "Top of the screen", function()
+                db.point = nil
+                Apply()
+            end },
+            { "Bottom of the screen", function()
+                db.point = { "BOTTOM", "BOTTOM", 0, 150 }
+                Apply()
+            end },
+        })
+        K:Note("Unlocked, Shift + drag moves it. Locked, clicks go through it and it has no tooltip.")
+
+        K:Section("Words")
+        K:Switch("Time played and this level", Is("showTop"), Set("showTop"), Shown)
+        K:Switch("Completed quests, in %", Is("showQuestText"), Set("showQuestText"), Shown)
+        K:Switch("Level, on the bar", Is("showLevel"), Set("showLevel"), Shown)
+        K:Switch("XP numbers, on the bar", Is("showNumbers"), Set("showNumbers"), Shown)
+        K:Switch("Short numbers (4.1k)", Is("shortNumbers"), Set("shortNumbers"), function()
+            return Shown() and Get("showNumbers")
+        end)
+        K:Switch("Percent, on the bar", Is("showPercent"), Set("showPercent"), Shown)
+        K:Switch("Time to level, XP per hour", Is("showRate"), Set("showRate"), Shown)
+        K:Switch("Rested, in %", Is("showRested"), Set("showRested"), Shown)
+        K:Switch("Tooltip", Is("tooltip"), Set("tooltip"), Unlocked)
+
+        K:Section("Colors")
+        K:Switch("Completed quests on the bar", Is("showQuestFill"), Set("showQuestFill"), Shown)
+        K:Switch("Rested on the bar", Is("showRestedFill"), Set("showRestedFill"), Shown)
+        K:Color("XP", Value("colorXP"), Set("colorXP"), false, Shown)
+        K:Color("Completed quests", Value("colorQuest"), Set("colorQuest"), false, function()
+            return Shown() and Get("showQuestFill")
+        end)
+        K:Color("Rested", Value("colorRested"), Set("colorRested"), true, function()
+            return Shown() and Get("showRestedFill")
+        end)
+        K:Color("Background", Value("colorBack"), Set("colorBack"), true, Shown)
+
+        K:Section("Blizzard's bar")
+        K:Switch("Hide Blizzard's XP bar", function() return not Get("keepBlizzard") end, function(v)
+            db.keepBlizzard = not v
+            if v then HideBlizzardBar() end
+        end)
+        K:Note("Blizzard's bar comes back only after a /reload.")
+
+        K:Section("XP per hour")
+        K:Buttons({ { "Start the session again", function()
+            charDB.session = { start = time(), gained = 0, seen = time() }
+            Refresh()
+        end } })
+    end,
+    reset = function()
+        for key in pairs(DEFAULTS) do db[key] = nil end
+        db.point = nil
+        Apply()
+    end,
+}
+
+---------------------------------------------------------------------------
+-- ForeverUI's Move UI (ForeverUI's MoveUI.lua outlines it to drag)
+---------------------------------------------------------------------------
+ForeverUI_Movers = ForeverUI_Movers or {}
+ForeverUI_Movers[#ForeverUI_Movers + 1] = {
+    key = "xpbar",
+    title = "XP bar",
+    frame = root,
+    usable = function() return db ~= nil and not Get("hidden") end,
+    set = function(point, relPoint, x, y)
+        db.point = { point, relPoint, x, y }
+        Apply()
+    end,
+    reset = function()
+        db.point = nil
+        Apply()
+    end,
+}

@@ -1,0 +1,11 @@
+## Interface: 16001
+## Title: ForeverUI Quest Log
+## Notes: The classic two-page quest log: the quest's text on one page, the list of quests on the other. The quest log key opens it; the map key stays the map.
+## Author: morderous
+## Version: 0.1.0
+## IconTexture: Interface\Icons\INV_Misc_Book_08
+## OptionalDeps: EllesmereUI
+## SavedVariables: ForeverUIQuestLogDB
+## SavedVariablesPerCharacter: ForeverUIQuestLogCharDB
+
+ForeverUI_QuestLog.lua
